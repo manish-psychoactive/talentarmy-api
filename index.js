@@ -65,22 +65,41 @@ app.get('/jobadder/redirect', async (req, res) => {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
         }
-        res.send('code is '+ code)
         const response = await axios.post(JOBADDER_TOKEN_URL, new URLSearchParams(params).toString(), headers);
         if (response.status_code == 400) {
             console.log('There was an error in fetching tokens')
         } else {
             console.log('token codes', response.data)
+            res.send(JSON.stringify(response.data))
         }
     } else {
       // error
         console.log('Access Denied');
     }
-    res.send('Redirected here!!');
 });
 
-app.get('/jobadder/token', (req, res) => {
+app.get('/jobadder/refresh-tokens', async (req, res) => {
     console.log('token');
+    const refreshToken = process.env.JOBADDER_REFRESH_TOKEN;
+
+    const params = {
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+        client_id: process.env.JOBADDER_CLIENT_ID,
+        client_secret: process.env.JOBADDER_CLIENT_SECRET,
+    };
+    const headers = {
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    }
+    const response = await axios.post(JOBADDER_TOKEN_URL, new URLSearchParams(params).toString(), headers);
+    if (response.status_code == 400) {
+        console.log('There was an error in fetching tokens')
+    } else {
+        console.log('token codes', response.data)
+        res.send(JSON.stringify(response.data))
+    }
 });
 
 app.get('/jobadder/webhooks', async (req, res) => {
