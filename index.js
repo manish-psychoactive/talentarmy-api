@@ -1,10 +1,13 @@
 const express = require('express');
 const axios = require('axios');
+const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const { webFlowRequest } = require('./lib/webflow_request');
 
 const app = express();
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 const PORT = 5005;
 
 const JOBADDER_AUTHORIZE_URL = 'https://id.jobadder.com/connect/authorize';
@@ -42,7 +45,7 @@ app.get('/', async (req, res)=>{
 
 app.get('/jobadder/authorize', async (req, res) => {
     const clientId = process.env.JOBADDER_CLIENT_ID;
-    const scope = 'read write offline_access';
+    const scope = 'read  read_jobad offline_access';
     res.redirect(JOBADDER_AUTHORIZE_URL +`?response_type=code&client_id=${clientId}&scope=${scope}&redirect_uri=${REDIRECT_URI}`)
 });
 
@@ -133,6 +136,13 @@ app.get('/jobadder/webhooks/add', async (req, res) => {
     }
     const response = await axios.post(`${JOBADDER_API_URL}/webhooks`, data, headers);
     console.log(response);
+});
+
+
+app.post('/jobadder/webhooks/listen', (req, res) => {
+    const eventData = req.body;
+    console.log(eventData);
+    res.send(JSON.stringify(eventData));
 });
 
 
