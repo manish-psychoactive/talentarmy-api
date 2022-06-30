@@ -37,7 +37,7 @@ app.get('/', async (req, res)=>{
         "_draft": false
       }
     }
-    const response = await webFlowRequest('https://api.webflow.com/collections/62a8abdb74ec473d80d3c526/items', 'POST', data)
+    const response = await webFlowRequest('https://api.webflow.com/collections/62bb6c0fd288726e07c8470d/items', 'POST', data)
     res.status(200);
     console.log('response', response);
     res.send(`New job created with id: ${response["_id"]}`);
@@ -127,7 +127,7 @@ app.get('/jobadder/webhooks/add', async (req, res) => {
         }
     }
     const events = ['jobad_posted'];
-    const returnUrl = 'https://localhost:5005/jobadder/webhooks/listen';
+    const returnUrl = process.env.CLOUDFUNCTION_URL;
     const data = {
         name: 'Jobad posted webhook',
         events,
@@ -136,6 +136,27 @@ app.get('/jobadder/webhooks/add', async (req, res) => {
     }
     const response = await axios.post(`${JOBADDER_API_URL}/webhooks`, data, headers);
     console.log(response);
+});
+
+
+app.get('/jobadder/webhooks/update', async (req, res) => {
+    const { id } = req.query;
+    const headers = {
+        headers: {
+        "Authorization": `Bearer ${process.env.JOBADDER_ACCESS_TOKEN}`,
+        "Content-Type": 'application/json'
+        }
+    }
+    const events = ['jobad_posted'];
+    const returnUrl = process.env.CLOUDFUNCTION_URL +'/jobadderWebhookListen';
+    const data = {
+        name: 'Jobad posted webhook',
+        events,
+        url: returnUrl,
+        status: 'Enabled'
+    }
+    const response = await axios.put(`${JOBADDER_API_URL}/webhooks/${id}`, data, headers);
+    res.send(response.status)
 });
 
 
